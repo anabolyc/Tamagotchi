@@ -1,7 +1,8 @@
 /*
- * ArduinoGotchi - A real Tamagotchi emulator for Arduino UNO
+ * ArduinoGotchi - A real Tamagotchi emulator for Arduino ESP32
  *
- * Copyright (C) 2022 Gary Kwok
+ * Copyright (C) 2022 Gary Kwok - Arduino Uno Implementation
+ * Copyright (C) 2022 Marcel Ochsendorf - ESP32 Plattform Support
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,10 +29,14 @@
 #include "savestate.h"
 #endif
 
+#if defined(ESP32)
+#include "Tone32.h"
+#endif
+
 /***** Set display orientation, U8G2_MIRROR_VERTICAL is not supported *****/
-//#define U8G2_LAYOUT_NORMAL
-#define U8G2_LAYOUT_ROTATE_180
-//#define U8G2_LAYOUT_MIRROR
+#define U8G2_LAYOUT_NORMAL
+// #define U8G2_LAYOUT_ROTATE_180
+// #define U8G2_LAYOUT_MIRROR
 /**************************************************************************/
 
 #ifdef U8G2_LAYOUT_NORMAL
@@ -58,11 +63,15 @@ U8G2_SSD1306_128X64_NONAME_2_HW_I2C display(U8G2_MIRROR);
 #define PIN_BUZZER 0
 #define ENABLE_TAMA_SOUND
 #define ENABLE_TAMA_SOUND_ACTIVE_LOW
+
 #elif defined(ESP32)
-#define PIN_BTN_L 255
-#define PIN_BTN_M 255
-#define PIN_BTN_R 255
-#define PIN_BUZZER 255
+#define PIN_BTN_L 18
+#define PIN_BTN_M 19
+#define PIN_BTN_R 23
+#define PIN_BUZZER 15
+#define BUZZER_CHANNEL 0
+#define TONE_CHANNEL 15
+
 #else
 #define PIN_BTN_L 2
 #define PIN_BTN_M 3
@@ -70,12 +79,30 @@ U8G2_SSD1306_128X64_NONAME_2_HW_I2C display(U8G2_MIRROR);
 #define PIN_BUZZER 9
 #endif
 
+#if defined(ESP32)
+void esp32_noTone(uint8_t pin, uint8_t channel)
+{
+  ledcDetachPin(pin);
+  ledcWrite(channel, 0);
+}
+
+void esp32_tone(uint8_t pin, unsigned int frequency, unsigned long duration, uint8_t channel)
+{
+  if (!ledcRead(channel))
+  {
+    ledcAttachPin(pin, channel);
+  }
+
+  ledcWriteTone(channel, frequency);
+}
+#endif
+
 void displayTama();
 
 /**** TamaLib Specific Variables ****/
 static uint16_t current_freq = 0;
 static bool_t matrix_buffer[LCD_HEIGHT][LCD_WIDTH / 8] = {{0}};
-//static byte runOnceBool = 0;
+// static byte runOnceBool = 0;
 static bool_t icon_buffer[ICON_NUM] = {0};
 static cpu_state_t cpuState;
 static unsigned long lastSaveTimestamp = 0;
@@ -144,14 +171,18 @@ static void hal_play_frequency(bool_t en)
 #ifdef ENABLE_TAMA_SOUND
   if (en)
   {
-    tone(PIN_BUZZER, current_freq);
+
+#if defined(ESP32)
+    esp32_tone(PIN_BUZZER, current_freq, 500, BUZZER_CHANNEL);
+#else
+#endif
   }
   else
   {
-    noTone(PIN_BUZZER);
-    #ifdef ENABLE_TAMA_SOUND_ACTIVE_LOW
-    digitalWrite(PIN_BUZZER, HIGH);
-    #endif
+#if defined(ESP32)
+    esp32_noTone(PIN_BUZZER, BUZZER_CHANNEL);
+#else
+#endif
   }
 #endif
 }
@@ -190,8 +221,9 @@ static int hal_handler(void)
       hw_set_button(BTN_RIGHT, BTN_STATE_RELEASED);
     }
   }
-#else
-  if (digitalRead(PIN_BTN_L) == HIGH)
+#endif
+
+  if (digitalRead(PIN_BTN_L) == BUTTON_VOLTAGE_LEVEL_PRESSED)
   {
     hw_set_button(BTN_LEFT, BTN_STATE_PRESSED);
   }
@@ -199,7 +231,8 @@ static int hal_handler(void)
   {
     hw_set_button(BTN_LEFT, BTN_STATE_RELEASED);
   }
-  if (digitalRead(PIN_BTN_M) == HIGH)
+
+  if (digitalRead(PIN_BTN_M) == BUTTON_VOLTAGE_LEVEL_PRESSED)
   {
     hw_set_button(BTN_MIDDLE, BTN_STATE_PRESSED);
   }
@@ -207,7 +240,8 @@ static int hal_handler(void)
   {
     hw_set_button(BTN_MIDDLE, BTN_STATE_RELEASED);
   }
-  if (digitalRead(PIN_BTN_R) == HIGH)
+
+  if (digitalRead(PIN_BTN_R) == BUTTON_VOLTAGE_LEVEL_PRESSED)
   {
     hw_set_button(BTN_RIGHT, BTN_STATE_PRESSED);
   }
@@ -215,21 +249,6 @@ static int hal_handler(void)
   {
     hw_set_button(BTN_RIGHT, BTN_STATE_RELEASED);
   }
-// #ifdef ENABLE_AUTO_SAVE_STATUS
-//   if (digitalRead(PIN_BTN_SAVE) == HIGH)
-//   {
-//     if (button4state == 0)
-//     {
-//       saveStateToEEPROM(&cpuState);
-//     }
-//     button4state = 1;
-//   }
-//   else
-//   {
-//     button4state = 0;
-//   }
-// #endif
-#endif
   return 0;
 }
 
@@ -400,7 +419,10 @@ void setup()
   pinMode(PIN_BTN_L, INPUT);
   pinMode(PIN_BTN_M, INPUT);
   pinMode(PIN_BTN_R, INPUT);
-  pinMode(PIN_BUZZER, OUTPUT);
+
+#if defined(ESP32)
+  ledcSetup(BUZZER_CHANNEL, NOTE_C4, 8);
+#endif
 
   display.begin();
 
@@ -408,13 +430,17 @@ void setup()
   tamalib_set_framerate(TAMA_DISPLAY_FRAMERATE);
   tamalib_init(1000000);
 
+#if defined(ENABLE_AUTO_SAVE_STATUS) || defined(ENABLE_LOAD_STATE_FROM_EEPROM)
   initEEPROM();
+#endif
 
 #ifdef ENABLE_LOAD_STATE_FROM_EEPROM
   if (validEEPROM())
   {
     loadStateFromEEPROM(&cpuState);
-  } else {
+  }
+  else
+  {
     Serial.println(F("No magic number in state, skipping state restore"));
   }
 #elif ENABLE_LOAD_HARCODED_STATE_WHEN_START
@@ -438,15 +464,18 @@ void loop()
     saveStateToEEPROM(&cpuState);
   }
 
-  if (digitalRead(PIN_BTN_M) == HIGH) {
-    if (millis() - right_long_press_started > AUTO_SAVE_MINUTES * 1000) 
+  if (digitalRead(PIN_BTN_M) == BUTTON_VOLTAGE_LEVEL_PRESSED)
+  {
+    if (millis() - right_long_press_started > AUTO_SAVE_MINUTES * 1000)
     {
       eraseStateFromEEPROM();
-      #if defined(ESP8266) || defined(ESP32)
+#if defined(ESP8266) || defined(ESP32)
       ESP.restart();
-      #endif
+#endif
     }
-  } else {
+  }
+  else
+  {
     right_long_press_started = millis();
   }
 #endif
