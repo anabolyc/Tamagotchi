@@ -40,8 +40,24 @@ Use Platformio. Run `build` task to build for all platforms. Next, run the `Uplo
   -D ENABLE_LOAD_STATE_FROM_EEPROM
 ```
 
-### Circuit Diagram
-![Circuit Diagram](../main/images/circuit_diagram_01.png)
+### Board revisions
+
+#### Revision A
+
+First prototype, used external boost converter module soldered on the PCB for simplicity. However boost converter I used would give up too early, not pulling all the juice from the battery.
+This version contained one schematic issue: GPIO2 used for buzzer caused boot issues (bootstrap pin)
+
+#### Revision B
+
+Switched over to on-board boost converter (TPS61040DBVR). Buzzer pin changed to IO0.
+
+#### Revision C
+
+Identical electrically to rev B, however I switched to onboard SMD buttons (soldered from factory), as they had much better feel compared to the through-hole buttons I used before. 
+
+#### Revision D
+
+Switched to XC9140A331MR boost coverter, as this one can run down to 0.9V before it dies out. Added onboard power switch, so it can be switched off without removing batteries. Switched to onboard buzzer I used in another project to make bottom line flat (that way it can be placed on the desk for example).
 
 ### Wemos D1 Mini
 
