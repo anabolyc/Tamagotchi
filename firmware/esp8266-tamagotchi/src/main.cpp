@@ -33,7 +33,6 @@
 /**************************************************************************/
 
 #if defined(PIN_I2C_SDA) && defined(PIN_I2C_SCL) 
-#pragma message "Using I2C display on pins " PIN_I2C_SDA " and " PIN_I2C_SCL
 #ifdef U8G2_LAYOUT_NORMAL
 U8G2_SSD1306_128X64_NONAME_2_HW_I2C display(U8G2_R0, U8X8_PIN_NONE, PIN_I2C_SCL, PIN_I2C_SDA);
 #endif
@@ -44,7 +43,6 @@ U8G2_SSD1306_128X64_NONAME_2_HW_I2C display(U8G2_R2, U8X8_PIN_NONE, PIN_I2C_SCL,
 U8G2_SSD1306_128X64_NONAME_2_HW_I2C display(U8G2_MIRROR, U8X8_PIN_NONE, PIN_I2C_SCL, PIN_I2C_SDA);
 #endif
 #else
-#pragma message "Using default I2C display"
 #ifdef U8G2_LAYOUT_NORMAL
 U8G2_SSD1306_128X64_NONAME_2_HW_I2C display(U8G2_R0);
 #endif
