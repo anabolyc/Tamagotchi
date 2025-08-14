@@ -27,18 +27,34 @@
 #include "savestate.h"
 
 /***** Set display orientation, U8G2_MIRROR_VERTICAL is not supported *****/
-#define U8G2_LAYOUT U8G2_R2        // rotate 180 degrees
-// #define U8G2_LAYOUT U8G2_R0     // normal orientation
-// #define U8G2_LAYOUT U8G2_MIRROR // mirror display
+//#define U8G2_LAYOUT_NORMAL
+#define U8G2_LAYOUT_ROTATE_180
+//#define U8G2_LAYOUT_MIRROR
 /**************************************************************************/
 
-// #if defined(PIN_I2C_SDA) && defined(PIN_I2C_SCL) 
-// #pragma message "Using I2C display on pins " PIN_I2C_SDA " and " PIN_I2C_SCL
-// U8G2_SSD1306_128X64_NONAME_2_HW_I2C display(U8G2_LAYOUT, U8X8_PIN_NONE, PIN_I2C_SCL, PIN_I2C_SDA);
-// #else
-// #pragma message "Using default I2C display"
-U8G2_SSD1306_128X64_NONAME_2_HW_I2C display(U8G2_LAYOUT);
-// #endif
+#if defined(PIN_I2C_SDA) && defined(PIN_I2C_SCL) 
+#pragma message "Using I2C display on pins " PIN_I2C_SDA " and " PIN_I2C_SCL
+#ifdef U8G2_LAYOUT_NORMAL
+U8G2_SSD1306_128X64_NONAME_2_HW_I2C display(U8G2_R0, U8X8_PIN_NONE, PIN_I2C_SCL, PIN_I2C_SDA);
+#endif
+#ifdef U8G2_LAYOUT_ROTATE_180
+U8G2_SSD1306_128X64_NONAME_2_HW_I2C display(U8G2_R2, U8X8_PIN_NONE, PIN_I2C_SCL, PIN_I2C_SDA);
+#endif
+#ifdef U8G2_LAYOUT_MIRROR
+U8G2_SSD1306_128X64_NONAME_2_HW_I2C display(U8G2_MIRROR, U8X8_PIN_NONE, PIN_I2C_SCL, PIN_I2C_SDA);
+#endif
+#else
+#pragma message "Using default I2C display"
+#ifdef U8G2_LAYOUT_NORMAL
+U8G2_SSD1306_128X64_NONAME_2_HW_I2C display(U8G2_R0);
+#endif
+#ifdef U8G2_LAYOUT_ROTATE_180
+U8G2_SSD1306_128X64_NONAME_2_HW_I2C display(U8G2_R2);
+#endif
+#ifdef U8G2_LAYOUT_MIRROR
+U8G2_SSD1306_128X64_NONAME_2_HW_I2C display(U8G2_MIRROR);
+#endif
+#endif
 
 void displayTama();
 
