@@ -46,6 +46,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install --upgrade platformio
           
+      - name: Install intelhex
+        run: pip install intelhex
+
       - name: Build examples
         run: |
           pio run -d ${{ matrix.example }}
