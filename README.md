@@ -4,7 +4,7 @@
 
 **ArduinoGotchi** is a real [Tamagotchi P1](https://tamagotchi.fandom.com/wiki/Tamagotchi_(1996_Pet)) emulator running in Arduino UNO hardware. The emulation core is based on [TamaLib](https://github.com/jcrona/tamalib) with intensive optimization to make it fit into UNO's hardware that only comes with 32K Flash 2K RAM.
 
-![Tamagotchi P1 Actual Devices](../main/images/TamaP1_devices.jpg)
+![Tamagotchi P1 Actual Devices](/images/TamaP1_devices.jpg)
 
 ## Fork notice
 
