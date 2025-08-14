@@ -4,17 +4,17 @@
 
 **ArduinoGotchi** is a real [Tamagotchi P1](https://tamagotchi.fandom.com/wiki/Tamagotchi_(1996_Pet)) emulator running in Arduino UNO hardware. The emulation core is based on [TamaLib](https://github.com/jcrona/tamalib) with intensive optimization to make it fit into UNO's hardware that only comes with 32K Flash 2K RAM.
 
-![Tamagotchi P1 Actual Devices](../main/images/TamaP1_devices.jpg)
+![Tamagotchi P1 Actual Devices](/images/TamaP1_devices.jpg)
 
 ## Fork notice
 
 I did the following changes after forking [original repo](https://github.com/GaryZ88/ArduinoGotchi)
 - Created a platformio project, so it is easy to target multiple platforms
-- Created ports for ESP8266 and ESP32, mainly because speed on 8-bit AVR is just too slow
+- Created ports for ESP8266 and ESP32, mainly because the speed on 8-bit AVR is just too slow
 - Added long click on "back" button - if you press it for 5 seconds, it will reset memory back to egg state
 - Added inverted Speaker connection setting. Mainly because the Piezo modules that I have are active on Low. Another reason is mentioned below.
 
-I personally assembled the ESP8266 version with Wemos D1 Mini on perf board, using built-in LED together with speaker, so when it sounds, LED is blinking as well.
+I personally assembled the ESP8266 version with Wemos D1 Mini on a perf board, using the built-in LED together with a speaker, so when it sounds, the LED is blinking as well.
 
 ### Demo
 ![Demo #1](/images/VID_20220923_205516.mp4.gif)
@@ -23,12 +23,12 @@ I personally assembled the ESP8266 version with Wemos D1 Mini on perf board, usi
 
 ## How to build and run
 
-Use Platformio. Run `build` task to build for all platforms. Next, run the `Upload` task for a specific platform
+Use Platformio. Run the `build` task to build for all platforms. Next, run the `Upload` task for a specific platform
 
 ### Additional notes
 - To activate your pet, you have to configure the clock by pressing the middle button. Otherwise, your pet will not be alive.
 - The emulator will save the game status every 5 minutes. You can change that by changing the AUTO_SAVE_MINUTES setting
-- The speed of the emulator is a bit slower than the actual Tamagotchi device on AVR, still, it is fun. On ESPs it runs smoothly.
+- The speed of the emulator is a bit slower than the actual Tamagotchi device on AVR; still, it is fun. On ESPs, it runs smoothly.
 - There are a few costs in the `platformio.ini` that you can adjust to fit your needs:
 ```
   -D DISPLAY_I2C_ADDRESS=0x3C
@@ -40,8 +40,34 @@ Use Platformio. Run `build` task to build for all platforms. Next, run the `Uplo
   -D ENABLE_LOAD_STATE_FROM_EEPROM
 ```
 
-### Circuit Diagram
-![Circuit Diagram](../main/images/circuit_diagram_01.png)
+### Board revisions
+
+#### Revision A
+
+The first prototype used an external boost converter module soldered on the PCB for simplicity. However boost converter I used would give up too early, not pulling all the juice from the battery.
+This version contained one schematic issue: GPIO2 used for the buzzer caused boot issues (bootstrap pin)
+
+<img width="1234" height="555" alt="image" src="https://github.com/user-attachments/assets/9671521b-6a0d-4dc4-b5c5-223fa6ecf9e7" />
+
+#### Revision B
+
+Switched over to on-board boost converter (TPS61040DBVR). Buzzer pin changed to IO0.
+
+<img width="1236" height="581" alt="image" src="https://github.com/user-attachments/assets/88ee8e9c-b1e2-411a-aea6-193079c4a4ee" />
+
+#### Revision C
+
+Identical electrically to rev B, however, I switched to onboard SMD buttons (soldered from the factory), as they had much better feel compared to the through-hole buttons I used before. 
+
+<img width="1199" height="581" alt="image" src="https://github.com/user-attachments/assets/4582ea76-ba4b-477e-9e5a-ad1c61f82d2d" />
+
+#### Revision D
+
+Switched to XC9140A331MR boost converter, as this one can run down to 0.9V before it dies out. Added onboard power switch, so it can be switched off without removing batteries. Switched to onboard buzzer I used in another project to make the bottom line flat (that way it can be placed on the desk, for example). 
+
+Also, I decided to switch to ESP32-S2 from ESP8266 as they become more and more available. Also I had a bunch of them, and I didn't really know where to use them ;)
+
+<img width="1187" height="554" alt="image" src="https://github.com/user-attachments/assets/e1c83534-eaf9-49ee-a57e-45e746caf6b8" />
 
 ### Wemos D1 Mini
 

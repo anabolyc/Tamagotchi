@@ -24,9 +24,7 @@
 #include "tamalib.h"
 #include "hw.h"
 #include "bitmaps.h"
-#if defined(ENABLE_AUTO_SAVE_STATUS) || defined(ENABLE_LOAD_STATE_FROM_EEPROM)
 #include "savestate.h"
-#endif
 
 /***** Set display orientation, U8G2_MIRROR_VERTICAL is not supported *****/
 //#define U8G2_LAYOUT_NORMAL
@@ -34,40 +32,26 @@
 //#define U8G2_LAYOUT_MIRROR
 /**************************************************************************/
 
+#if defined(PIN_I2C_SDA) && defined(PIN_I2C_SCL) 
+#ifdef U8G2_LAYOUT_NORMAL
+U8G2_SSD1306_128X64_NONAME_2_HW_I2C display(U8G2_R0, U8X8_PIN_NONE, PIN_I2C_SCL, PIN_I2C_SDA);
+#endif
+#ifdef U8G2_LAYOUT_ROTATE_180
+U8G2_SSD1306_128X64_NONAME_2_HW_I2C display(U8G2_R2, U8X8_PIN_NONE, PIN_I2C_SCL, PIN_I2C_SDA);
+#endif
+#ifdef U8G2_LAYOUT_MIRROR
+U8G2_SSD1306_128X64_NONAME_2_HW_I2C display(U8G2_MIRROR, U8X8_PIN_NONE, PIN_I2C_SCL, PIN_I2C_SDA);
+#endif
+#else
 #ifdef U8G2_LAYOUT_NORMAL
 U8G2_SSD1306_128X64_NONAME_2_HW_I2C display(U8G2_R0);
 #endif
-
 #ifdef U8G2_LAYOUT_ROTATE_180
 U8G2_SSD1306_128X64_NONAME_2_HW_I2C display(U8G2_R2);
 #endif
-
 #ifdef U8G2_LAYOUT_MIRROR
 U8G2_SSD1306_128X64_NONAME_2_HW_I2C display(U8G2_MIRROR);
 #endif
-
-#if defined(ESP8266_KIT_A)
-#define PIN_BTN_L 12
-#define PIN_BTN_M 13
-#define PIN_BTN_R 15
-#define PIN_BUZZER 2
-#elif defined(ESP8266_KIT_B)
-#define PIN_BTN_L 12
-#define PIN_BTN_M 13
-#define PIN_BTN_R 15
-#define PIN_BUZZER 0
-#define ENABLE_TAMA_SOUND
-#define ENABLE_TAMA_SOUND_ACTIVE_LOW
-#elif defined(ESP32)
-#define PIN_BTN_L 255
-#define PIN_BTN_M 255
-#define PIN_BTN_R 255
-#define PIN_BUZZER 255
-#else
-#define PIN_BTN_L 2
-#define PIN_BTN_M 3
-#define PIN_BTN_R 4
-#define PIN_BUZZER 9
 #endif
 
 void displayTama();
@@ -156,8 +140,6 @@ static void hal_play_frequency(bool_t en)
 #endif
 }
 
-static bool_t button4state = 0;
-
 static int hal_handler(void)
 {
 #ifdef ENABLE_SERIAL_DEBUG_INPUT
@@ -216,6 +198,7 @@ static int hal_handler(void)
     hw_set_button(BTN_RIGHT, BTN_STATE_RELEASED);
   }
 // #ifdef ENABLE_AUTO_SAVE_STATUS
+//   static bool_t button4state = 0;
 //   if (digitalRead(PIN_BTN_SAVE) == HIGH)
 //   {
 //     if (button4state == 0)
@@ -396,12 +379,14 @@ uint8_t reverseBits(uint8_t num)
 void setup()
 {
   Serial.begin(SERIAL_BAUD);
+  Serial.println(F("\nStarting Tamagotchi..."));
 
   pinMode(PIN_BTN_L, INPUT);
   pinMode(PIN_BTN_M, INPUT);
   pinMode(PIN_BTN_R, INPUT);
   pinMode(PIN_BUZZER, OUTPUT);
 
+  Serial.println(F("Initializing display..."));
   display.begin();
 
   tamalib_register_hal(&hal);
@@ -424,6 +409,7 @@ void setup()
 #ifdef ENABLE_DUMP_STATE_TO_SERIAL_WHEN_START
   dumpStateToSerial();
 #endif
+  Serial.println(F("Tamagotchi initialized."));
 }
 
 uint32_t right_long_press_started = 0;
