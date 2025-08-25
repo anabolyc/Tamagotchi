@@ -53,7 +53,7 @@ This version contained one schematic issue: GPIO2 used for the buzzer caused boo
 
 Switched over to on-board boost converter (TPS61040DBVR). Buzzer pin changed to IO0.
 
-<img width="1236" height="581" alt="image" src="https://github.com/user-attachments/assets/88ee8e9c-b1e2-411a-aea6-193079c4a4ee" />
+<img width="1958" height="2189" alt="image" src="https://github.com/user-attachments/assets/6acdf62b-8212-46a3-83bb-c74f32ccd564" />
 
 #### Revision C
 
@@ -67,14 +67,7 @@ Switched to XC9140A331MR boost converter, as this one can run down to 0.9V befor
 
 Also, I decided to switch to ESP32-S2 from ESP8266 as they become more and more available. Also I had a bunch of them, and I didn't really know where to use them ;)
 
-<img width="1187" height="554" alt="image" src="https://github.com/user-attachments/assets/e1c83534-eaf9-49ee-a57e-45e746caf6b8" />
-
-### Wemos D1 Mini
-
-![image](https://user-images.githubusercontent.com/5459747/192046441-1461c20e-b5f6-4a72-a79b-7815a77e1c00.png)
-![image](https://user-images.githubusercontent.com/5459747/192046464-36be5fc8-1893-4b04-a4e0-53a563c3ad33.png)
-![image](https://user-images.githubusercontent.com/5459747/192046512-4251114a-d74a-42fc-b67a-0f48a1a26ef4.png)
-![image](https://user-images.githubusercontent.com/5459747/192046612-6c835d33-e341-4386-8917-5823d573414d.png)
+<img width="2959" height="2588" alt="image" src="https://github.com/user-attachments/assets/56465523-89e7-4949-a00a-08f461ae367f" />
 
 ### License
 ArduinoGotchi is distributed under the GPLv2 license. See the LICENSE file for more information.
